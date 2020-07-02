@@ -1,0 +1,45 @@
+{
+    "name": "how-to-use-webgpu",
+    "version": "1.0.0",
+    "description": "",
+    "main": "webpack.dev.js",
+    "scripts": {
+        "start": "webpack-dev-server --config build/webpack.dev.js",
+        "build": "webpack --config build/webpack.prod.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/code945/HowToUseWebGPU.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/code945/HowToUseWebGPU/issues"
+    },
+    "homepage": "https://github.com/code945/HowToUseWebGPU#readme",
+    "dependencies": {
+        "@webgpu/glslang": "0.0.12"
+    },
+    "devDependencies": {
+        "@webgpu/types": "0.0.19",
+        "autoprefixer": "^9.1.5",
+        "clean-webpack-plugin": "^0.1.19",
+        "copy-webpack-plugin": "^4.5.2",
+        "css-loader": "^1.0.0",
+        "file-loader": "^5.0.2",
+        "html-loader": "^0.5.5",
+        "html-webpack-plugin": "^3.2.0",
+        "imports-loader": "^0.8.0",
+        "less": "^3.8.1",
+        "less-loader": "^4.1.0",
+        "mini-css-extract-plugin": "^0.4.2",
+        "postcss-loader": "^3.0.0",
+        "style-loader": "^0.23.0",
+        "ts-loader": "^5.0.0",
+        "typescript": "^3.0.3",
+        "webpack": "^4.17.2",
+        "webpack-cli": "^3.1.0",
+        "webpack-dev-server": "^3.1.7"
+    }
+}

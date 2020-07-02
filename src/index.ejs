@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>demo</title>
+        <meta charset="UTF-8" />
+
+        <meta
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+            name="viewport"
+        />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    </head>
+
+    <body>
+        <div class="content">
+            <div class="header">点击 Demo 查看在线演示</div>
+            <ul class="list">
+                <% items.forEach(function(item){%>
+                <li class="item">
+                    <a href="<%=item %>.html"> - <%=item %></a>
+                </li>
+                <% }) %>
+            </ul>
+        </div>
+    </body>
+</html>
