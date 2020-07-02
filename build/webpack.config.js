@@ -74,12 +74,12 @@ module.exports = {
             distFolder
             //{ root: path.resolve(__dirname, '../')}
         ),
-        new CopyWebpackPlugin([
-            {
-                from: "src/static",
-                to: "assets",
-            },
-        ]),
+        // new CopyWebpackPlugin([
+        //     {
+        //         from: "src/static",
+        //         to: "assets",
+        //     },
+        // ]),
         ...copyhtml,
     ],
     module: {
