@@ -1,5 +1,7 @@
 const path = require("path");
 const Webpack = require("webpack");
+const fs = require("fs");
+
 // creates index.html file by a template index.ejs
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 // cleans dist folder
@@ -10,7 +12,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const distFolder = "../dist";
 
-const sections = ["clearcolor"];
+const sections = fs.readdirSync(path.resolve(__dirname, "../src/demo"));
 
 let entryPoints = {
     index: `./src/index.ts`,
