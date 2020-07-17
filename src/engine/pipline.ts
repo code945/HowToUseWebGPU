@@ -3,7 +3,7 @@ import { WebGPURenderEngin } from "./renderEngin";
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-15 15:40:27
- * @LastEditTime: 2020-07-16 09:48:19
+ * @LastEditTime: 2020-07-17 22:39:36
  */
 export class WebGPURenderPipeline {
     engin: WebGPURenderEngin;
@@ -14,7 +14,11 @@ export class WebGPURenderPipeline {
     rasterizationState: GPURasterizationStateDescriptor;
 
     attributes: Array<any> = [];
-    uniformGroupInfo: any;
+
+    uniformBindGroup: GPUBindGroup;
+    uniformBindGroupLayout: GPUBindGroupLayout;
+
+    uniformEntries: Map<number, any> = new Map<number, any>();
     indexBuffer: GPUBuffer;
     indexLength: number;
 
@@ -94,61 +98,207 @@ export class WebGPURenderPipeline {
         );
     }
 
-    addAttribute(typedArray: Float32Array | Uint16Array | Uint32Array) {
+    addAttribute(
+        typedArray: Float32Array | Uint16Array | Uint32Array,
+        componentSize: number = 3
+    ) {
         const buffer = this.createBuffer(typedArray, GPUBufferUsage.VERTEX);
-        this.attributes.push(buffer);
+        this.attributes.push({ buffer, componentSize });
     }
 
     setIndex(typedArray: Uint16Array | Uint32Array) {
         this.indexBuffer = this.createBuffer(typedArray, GPUBufferUsage.INDEX);
         this.indexLength = typedArray.length;
     }
+    /**
+     *
+     *
+     * @param {*} options
+     *  binding: 0,
+     *  visibility: GPUShaderStage.VERTEX,
+     *  type: "uniform-buffer",
+     *  resource: buffer | sampler | textureView
+     *
+     * @memberof WebGPURenderPipeline
+     */
+    addUniformEntry(options: any) {
+        this.uniformEntries.set(options.binding, options);
+    }
 
-    addUniform(typedArray: Float32Array | Uint16Array | Uint32Array) {
+    getUniformEntryByBinding(key: number): any {
+        return this.uniformEntries.get(key);
+    }
+
+    addUniformBuffer(
+        typedArray: Float32Array | Uint16Array | Uint32Array,
+        binding: number = 0
+    ) {
         const buffer = this.createBuffer(
             typedArray,
             GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         );
+        this.addUniformEntry({
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            type: "uniform-buffer",
+            resource: {
+                buffer: buffer,
+            },
+        });
+    }
 
-        let uniformBindGroup: GPUBindGroup = null;
-
-        // @ts-ignore
-        const bindGroupLayoutDes: GPUBindGroupLayoutDescriptor = {
-            // @ts-ignore
-            entries: [
-                {
-                    binding: 0,
-                    visibility: GPUShaderStage.VERTEX,
-                    type: "uniform-buffer",
-                },
-            ],
-        };
-        const uniformBindGroupLayout = this.engin.device.createBindGroupLayout(
-            bindGroupLayoutDes
-        );
-        // 🗄️ Bind Group
-        // ✍ This would be used when encoding commands
-        uniformBindGroup = this.engin.device.createBindGroup({
-            layout: uniformBindGroupLayout,
-            // @ts-ignore
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: buffer,
-                    },
-                },
-            ],
+    addSampler(
+        binding: number,
+        magFilter: GPUFilterMode = "linear",
+        minFilter: GPUFilterMode = "linear"
+    ) {
+        const sampler = this.engin.device.createSampler({
+            magFilter: magFilter,
+            minFilter: minFilter,
+            maxAnisotropy: 4,
         });
 
-        this.uniformGroupInfo = {
-            buffer,
-            uniformBindGroupLayout,
-            uniformBindGroup,
+        this.addUniformEntry({
+            binding: binding,
+            visibility: GPUShaderStage.FRAGMENT,
+            type: "sampler",
+            resource: sampler,
+        });
+    }
+
+    async addTextureView(
+        binding: number,
+        url: string,
+        needCors: boolean = true
+    ) {
+        const img = new Image();
+        if (needCors) {
+            img.crossOrigin = "anonymous";
+        }
+        img.src = url;
+        await img.decode();
+        const bitmap = await createImageBitmap(img);
+
+        const texture = this.engin.device.createTexture({
+            size: {
+                width: img.width,
+                height: img.height,
+                depth: 1,
+            },
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
+        });
+
+        let source: GPUImageBitmapCopyView = {
+            imageBitmap: bitmap,
         };
+
+        let destination: GPUTextureCopyView = {
+            texture: texture,
+        };
+
+        let copySize: GPUExtent3D = {
+            width: img.width,
+            height: img.height,
+            depth: 1,
+        };
+
+        this.engin.device.defaultQueue.copyImageBitmapToTexture(
+            source,
+            destination,
+            copySize
+        );
+
+        bitmap.close();
+
+        this.addUniformEntry({
+            binding: binding,
+            visibility: GPUShaderStage.FRAGMENT,
+            type: "sampled-texture",
+            resource: texture.createView(),
+        });
+    }
+
+    // addUniform(typedArray: Float32Array | Uint16Array | Uint32Array) {
+    //     const buffer = this.createBuffer(
+    //         typedArray,
+    //         GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    //     );
+
+    //     // @ts-ignore
+    //     const bindGroupLayoutDes: GPUBindGroupLayoutDescriptor = {
+    //         // @ts-ignore
+    //         entries: [
+    //             {
+    //                 binding: 0,
+    //                 visibility: GPUShaderStage.VERTEX,
+    //                 type: "uniform-buffer",
+    //             },
+    //             // {
+    //             //     binding: 1,
+    //             //     visibility: GPUShaderStage.FRAGMENT,
+    //             //     type: "sampler",
+    //             // },
+    //             // {
+    //             //     binding: 2,
+    //             //     visibility: GPUShaderStage.FRAGMENT,
+    //             //     type: "sampled-texture",
+    //             // },
+    //         ],
+    //     };
+    //     const uniformBindGroupLayout = this.engin.device.createBindGroupLayout(
+    //         bindGroupLayoutDes
+    //     );
+    //     // 🗄️ Bind Group
+    //     // ✍ This would be used when encoding commands
+    //     uniformBindGroup = this.engin.device.createBindGroup({
+    //         layout: uniformBindGroupLayout,
+    //         // @ts-ignore
+    //         entries: [
+    //             {
+    //                 binding: 0,
+    //                 resource: {
+    //                     buffer: buffer,
+    //                 },
+    //             },
+    //         ],
+    //     });
+
+    //     this.uniformGroupInfo = {
+    //         buffer,
+    //         uniformBindGroupLayout,
+    //         uniformBindGroup,
+    //     };
+    // }
+
+    generateUniforms() {
+        const bindGroupLayoutDes: any = { entries: [] };
+        const bindGroupEntries: Array<any> = [];
+        const entries = this.uniformEntries.values;
+        this.uniformEntries.forEach((entry, key) => {
+            bindGroupLayoutDes.entries.push({
+                binding: entry.binding,
+                visibility: entry.visibility,
+                type: entry.type,
+            });
+            bindGroupEntries.push({
+                binding: entry.binding,
+                resource: entry.resource,
+            });
+        });
+
+        this.uniformBindGroupLayout = this.engin.device.createBindGroupLayout(
+            bindGroupLayoutDes
+        );
+        this.uniformBindGroup = this.engin.device.createBindGroup({
+            layout: this.uniformBindGroupLayout,
+            // @ts-ignore
+            entries: bindGroupEntries,
+        });
     }
 
     generatePipline() {
+        this.generateUniforms();
         // 🖍️ Shader Modules
         this.vertexStage = {
             module: this.vertModule,
@@ -163,11 +313,11 @@ export class WebGPURenderPipeline {
         // 🍥 Blend State
         this.colorState = {
             format: "bgra8unorm",
-            alphaBlend: {
-                srcFactor: "src-alpha",
-                dstFactor: "one-minus-src-alpha",
-                operation: "add",
-            },
+            // alphaBlend: {
+            //     srcFactor: "src-alpha",
+            //     dstFactor: "one-minus-src-alpha",
+            //     operation: "add",
+            // },
             colorBlend: {
                 srcFactor: "src-alpha",
                 dstFactor: "one-minus-src-alpha",
@@ -184,7 +334,7 @@ export class WebGPURenderPipeline {
 
         // 💾 Uniform Data
         this.layout = this.engin.device.createPipelineLayout({
-            bindGroupLayouts: [this.uniformGroupInfo.uniformBindGroupLayout],
+            bindGroupLayouts: [this.uniformBindGroupLayout],
         });
 
         this.vertexState = {
@@ -208,14 +358,16 @@ export class WebGPURenderPipeline {
 
     getVertexBufferDesc() {
         return this.attributes.map((item, index) => {
-            const attribDesc: GPUVertexAttributeDescriptor = {
-                shaderLocation: index, // [[attribute(index)]]
-                offset: 0,
-                format: "float3",
-            };
             const bufferDesc: GPUVertexBufferLayoutDescriptor = {
-                attributes: [attribDesc],
-                arrayStride: 4 * 3, // sizeof(float) * 3
+                attributes: [
+                    {
+                        shaderLocation: index, // [[attribute(index)]]
+                        offset: 0,
+                        // @ts-ignore
+                        format: `float${item.componentSize}`,
+                    },
+                ],
+                arrayStride: 4 * item.componentSize, // sizeof(float) * 3
                 stepMode: "vertex",
             };
             return bufferDesc;

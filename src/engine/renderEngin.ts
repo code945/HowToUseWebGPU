@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-08 15:48:10
- * @LastEditTime: 2020-07-16 00:00:36
+ * @LastEditTime: 2020-07-17 18:07:08
  */
 
 import { Glslang } from "@webgpu/glslang/dist/web-devel/glslang.onefile";
@@ -131,14 +131,14 @@ export class WebGPURenderEngin {
             this.canvas.height
         );
         for (let i = 0; i < currentPipeline.attributes.length; i++) {
-            let buffer = currentPipeline.attributes[i];
+            let buffer = currentPipeline.attributes[i].buffer;
             this.renderPassEncoder.setVertexBuffer(i, buffer);
         }
 
         this.renderPassEncoder.setIndexBuffer(currentPipeline.indexBuffer);
         this.renderPassEncoder.setBindGroup(
             0,
-            currentPipeline.uniformGroupInfo.uniformBindGroup
+            currentPipeline.uniformBindGroup
         );
 
         this.renderPassEncoder.drawIndexed(
