@@ -3,7 +3,7 @@ import { WebGPURenderEngin } from "./renderEngin";
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-15 15:40:27
- * @LastEditTime: 2020-07-17 22:39:36
+ * @LastEditTime: 2020-07-18 23:05:30
  */
 export class WebGPURenderPipeline {
     engin: WebGPURenderEngin;
@@ -139,7 +139,7 @@ export class WebGPURenderPipeline {
         );
         this.addUniformEntry({
             binding: 0,
-            visibility: GPUShaderStage.VERTEX,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
             type: "uniform-buffer",
             resource: {
                 buffer: buffer,
@@ -328,8 +328,8 @@ export class WebGPURenderPipeline {
 
         // 🔺 Rasterization
         this.rasterizationState = {
-            frontFace: "cw",
-            cullMode: "none",
+            // frontFace: "cw",
+            // cullMode: "back",
         };
 
         // 💾 Uniform Data
@@ -349,6 +349,11 @@ export class WebGPURenderPipeline {
             primitiveTopology: "triangle-list",
             colorStates: [this.colorState],
             vertexState: this.vertexState,
+            depthStencilState: {
+                depthWriteEnabled: true,
+                depthCompare: "less",
+                format: "depth24plus-stencil8",
+            },
             rasterizationState: this.rasterizationState,
         };
         this.pipeline = this.engin.device.createRenderPipeline(

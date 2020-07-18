@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-17 16:30:01
+ * @LastEditTime: 2020-07-18 22:11:36
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -56,8 +56,8 @@ const projectionMtrix = mat4.perspective(
 
 const viewMatrix = mat4.lookAt(
     mat4.create(),
-    vec3.fromValues(0, 0, 5),
-    vec3.fromValues(0, 0, -1),
+    vec3.fromValues(0, 0, -5),
+    vec3.fromValues(0, 0, 1),
     vec3.fromValues(0, 1, 0)
 );
 

@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-17 22:42:26
+ * @LastEditTime: 2020-07-18 22:47:32
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -57,7 +57,7 @@ const positions = new Float32Array([
 const uvs = new Float32Array([1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]);
 
 // 🗄️ Index Buffer Data
-const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
+const indices = new Uint16Array([0, 2, 1, 0, 3, 2]);
 
 const projectionMtrix = mat4.perspective(
     mat4.create(),
@@ -69,8 +69,8 @@ const projectionMtrix = mat4.perspective(
 
 const viewMatrix = mat4.lookAt(
     mat4.create(),
-    vec3.fromValues(0, 0, 1.2),
-    vec3.fromValues(0, 0, -1),
+    vec3.fromValues(0, 0, -1.2),
+    vec3.fromValues(0, 0, 1),
     vec3.fromValues(0, 1, 0)
 );
 

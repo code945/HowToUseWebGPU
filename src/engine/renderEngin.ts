@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-08 15:48:10
- * @LastEditTime: 2020-07-17 18:07:08
+ * @LastEditTime: 2020-07-18 22:55:09
  */
 
 import { Glslang } from "@webgpu/glslang/dist/web-devel/glslang.onefile";
@@ -87,7 +87,15 @@ export class WebGPURenderEngin {
 
                 // 创建command生成器 用来编码向gpu发送的command
                 this.commandEncoder = this.device.createCommandEncoder();
-
+                this.depthTexture = this.device.createTexture({
+                    size: {
+                        width: this.canvas.width,
+                        height: this.canvas.height,
+                        depth: 1,
+                    },
+                    format: "depth24plus-stencil8",
+                    usage: GPUTextureUsage.OUTPUT_ATTACHMENT,
+                });
                 return true;
             } else {
                 return false;
@@ -98,7 +106,7 @@ export class WebGPURenderEngin {
         }
     }
 
-    draw() {
+    draw(vertNum?: number) {
         this.commandEncoder = this.device.createCommandEncoder();
         // 渲染pass的描述
         const renderPassDesc: GPURenderPassDescriptor = {
@@ -109,6 +117,14 @@ export class WebGPURenderEngin {
                     storeOp: "store",
                 },
             ],
+            depthStencilAttachment: {
+                attachment: this.depthTexture.createView(),
+
+                depthLoadValue: 1.0,
+                depthStoreOp: "store",
+                stencilLoadValue: 0,
+                stencilStoreOp: "store",
+            },
         };
         // 🖌️ Encode drawing commands
         this.renderPassEncoder = this.commandEncoder.beginRenderPass(
@@ -116,6 +132,12 @@ export class WebGPURenderEngin {
         );
         let currentPipeline = this.pipelines[0];
         this.renderPassEncoder.setPipeline(currentPipeline.pipeline);
+
+        this.renderPassEncoder.setBindGroup(
+            0,
+            currentPipeline.uniformBindGroup
+        );
+
         this.renderPassEncoder.setViewport(
             0,
             0,
@@ -135,19 +157,19 @@ export class WebGPURenderEngin {
             this.renderPassEncoder.setVertexBuffer(i, buffer);
         }
 
-        this.renderPassEncoder.setIndexBuffer(currentPipeline.indexBuffer);
-        this.renderPassEncoder.setBindGroup(
-            0,
-            currentPipeline.uniformBindGroup
-        );
+        if (currentPipeline.indexLength > 0) {
+            this.renderPassEncoder.setIndexBuffer(currentPipeline.indexBuffer);
 
-        this.renderPassEncoder.drawIndexed(
-            currentPipeline.indexLength,
-            1,
-            0,
-            0,
-            0
-        );
+            this.renderPassEncoder.drawIndexed(
+                currentPipeline.indexLength,
+                1,
+                0,
+                0,
+                0
+            );
+        } else {
+            this.renderPassEncoder.draw(vertNum, 1, 0, 0);
+        }
 
         this.renderPassEncoder.endPass();
 
