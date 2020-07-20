@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-08 15:48:10
- * @LastEditTime: 2020-07-18 22:55:09
+ * @LastEditTime: 2020-07-20 09:37:22
  */
 
 import { Glslang } from "@webgpu/glslang/dist/web-devel/glslang.onefile";
@@ -85,8 +85,6 @@ export class WebGPURenderEngin {
 
                 this.glslang = await glslangModule();
 
-                // 创建command生成器 用来编码向gpu发送的command
-                this.commandEncoder = this.device.createCommandEncoder();
                 this.depthTexture = this.device.createTexture({
                     size: {
                         width: this.canvas.width,
@@ -107,6 +105,7 @@ export class WebGPURenderEngin {
     }
 
     draw(vertNum?: number) {
+        // 创建command生成器 用来编码向gpu发送的command
         this.commandEncoder = this.device.createCommandEncoder();
         // 渲染pass的描述
         const renderPassDesc: GPURenderPassDescriptor = {

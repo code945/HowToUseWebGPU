@@ -1,7 +1,7 @@
 <!--
  * @Author: hongxu.lin
  * @Date: 2020-07-01 14:52:34
- * @LastEditTime: 2020-07-20 09:23:04
+ * @LastEditTime: 2020-07-20 09:29:01
 -->
 
 > **文章适合已经有 webgl（或其他图形学基础）的同学阅读学习，不适合纯新手，建议新手同学从 threejs 入门，学习曲线稍微平滑点。**
@@ -50,7 +50,20 @@ webpack 的相关配置项比较多，但是大多是常规配置，用来加载
     |----tsconfig.json  ts配置
 ```
 
-# 内容
+# 运行代码
+
+clone 代码仓库
+
+```
+npm install
+npm start
+```
+
+# online demo
+
+[https://code945.github.io/HowToUseWebGPU/](https://code945.github.io/HowToUseWebGPU/)
+
+# 文章内容
 
 webgpu 是下一代的 web 端图形接口，虽然目前仍然没法发布正式版。但是已经有可以运行的环境，可以让开发者尝鲜体验，本仓库就是记录笔者学习使用 webgpu 的整个过程。其中可能会包括如下的一些内容：
 
@@ -62,7 +75,7 @@ webgpu 是下一代的 web 端图形接口，虽然目前仍然没法发布正�
 6. pointLight 点光源
 7. spotLight 聚光灯
 
-# 相关连接
+# 相关连接及参考
 
 官方文档 https://gpuweb.github.io/gpuweb/
 
