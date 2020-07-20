@@ -1,9 +1,10 @@
 /*
  * @Author: hongxu.lin
- * @Date: 2020-07-08 18:04:14
- * @LastEditTime: 2020-07-15 22:49:49
+ * @Date: 2020-07-20 16:44:11
+ * @LastEditTime: 2020-07-20 16:50:05
  */
-export default `#version 450
+
+const vs = `#version 450 
 layout(set = 0, binding = 0) uniform Uniforms {
     mat4 uProjectionMatrix;
     mat4 uModelViewMatrix;
@@ -17,3 +18,12 @@ void main() {
     gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aPosition, 1.0);
     vColor = aColor;
 }`;
+
+const fs = `#version 450
+layout(location = 0) in vec4 vColor;
+layout(location = 0) out vec4 outColor;
+void main(void) {
+  outColor = vColor;
+}`;
+
+export { fs, vs };

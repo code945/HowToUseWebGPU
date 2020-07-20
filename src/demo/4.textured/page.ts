@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-18 22:47:32
+ * @LastEditTime: 2020-07-20 16:54:16
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -9,55 +9,10 @@ import { WebGPURenderEngin } from "../../engine/renderEngin";
 import { WebGPURenderPipeline } from "../../engine/pipline";
 
 import "../../style.less";
-
-const vs = `#version 450
-layout(set = 0, binding = 0) uniform Uniforms {
-    mat4 uProjectionMatrix;
-    mat4 uModelViewMatrix;
-};
-
-layout(location = 0) in vec3 aPosition;
-layout(location = 1) in vec2 aUV;
-
-layout(location = 0) out vec2 vUV;
-void main() {
-    gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aPosition, 1.0);
-    vUV = aUV;
-}`;
-
-const fs = `#version 450
-    precision highp float;
-    layout(set=0, binding=1) uniform sampler uSampler;
-    layout(set=0, binding=2) uniform texture2D uTexture0; 
-    layout(location=0) in vec2 vUV;
-
-    layout(location=0) out vec4 fragColor;
-
-    void main(){ 
-        fragColor = texture(sampler2D(uTexture0, uSampler), vUV);
-    }
-`;
+import { fs, vs } from "./shader";
+import { positions, indices, uvs } from "./data";
 
 const renderEngine: WebGPURenderEngin = new WebGPURenderEngin("renderCanvas");
-const positions = new Float32Array([
-    0.5,
-    -0.5,
-    0.0,
-    -0.5,
-    -0.5,
-    0.0,
-    -0.5,
-    0.5,
-    0.0,
-    0.5,
-    0.5,
-    0.0,
-]);
-
-const uvs = new Float32Array([1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]);
-
-// 🗄️ Index Buffer Data
-const indices = new Uint16Array([0, 2, 1, 0, 3, 2]);
 
 const projectionMtrix = mat4.perspective(
     mat4.create(),

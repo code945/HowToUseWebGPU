@@ -1,7 +1,7 @@
 <!--
  * @Author: hongxu.lin
  * @Date: 2020-07-01 14:52:34
- * @LastEditTime: 2020-07-20 11:47:48
+ * @LastEditTime: 2020-07-20 15:57:17
 -->
 
 **文章适合已经有 webgl（或其他图形学基础）的同学阅读学习，不适合纯新手，建议新手同学从 threejs 入门，学习曲线稍微平滑点。**
@@ -65,15 +65,17 @@ npm start
 
 # 文章内容
 
-webgpu 是下一代的 web 端图形接口，虽然目前仍然没法发布正式版。但是已经有可以运行的环境，可以让开发者尝鲜体验，本仓库就是记录笔者学习使用 webgpu 的整个过程。其中可能会包括如下的一些内容：
+webgpu 是下一代的 web 端图形接口，虽然目前仍然没法发布正式版。但是已经有可以运行的环境，可以让开发者尝鲜体验，本仓库就是记录笔者学习使用 webgpu 的整个过程。其中会包括如下的一些内容：
 
 1. [clearcolor 最简单的应用从清屏开始](docs/1.清屏.md)
-2. [drawTriangle 画个三角形](docs/2.绘制三角形.md)
-3. animated 动起来
+2. [drawTriangle 画个三角形 （attributes index）](docs/2.绘制三角形.md)
+3. [animated 动起来 （uniform）](docs/2.绘制三角形.md)
 4. textured 加上贴图
 5. directionalLight 方向光
 6. pointLight 点光源
 7. spotLight 聚光灯
+
+文章使用 markdown 撰写，在 `/docs` 目录中
 
 # 相关连接及参考
 

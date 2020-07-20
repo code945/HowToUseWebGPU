@@ -1,57 +1,14 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-20 15:11:29
+ * @LastEditTime: 2020-07-20 16:46:13
  */
 
 import glslangModule from "@webgpu/glslang/dist/web-devel/glslang.onefile";
 import "../../style.less";
 
-const vs = `#version 450 
-layout(location = 0) in vec3 aPosition;
-layout(location = 1) in vec4 aColor;
-
-layout(location = 0) out vec4 vColor;
-void main() {
-    gl_Position = vec4(aPosition, 1.0);
-    vColor = aColor;
-}`;
-
-const fs = `#version 450
-layout(location = 0) in vec4 vColor;
-layout(location = 0) out vec4 outColor;
-void main(void) {
-  outColor = vColor;
-}`;
-
-// Position Vertex Buffer Data
-const positions = new Float32Array([
-    1.0,
-    -1.0,
-    0.0,
-    -1.0,
-    -1.0,
-    0.0,
-    0.0,
-    1.0,
-    0.0,
-]);
-
-// Color Vertex Buffer Data
-const colors = new Float32Array([
-    1.0,
-    0.0,
-    0.0, // 🔴
-    0.0,
-    1.0,
-    0.0, // 🟢
-    0.0,
-    0.0,
-    1.0, // 🔵
-]);
-
-// Index Buffer Data
-const indices = new Uint16Array([0, 2, 1]);
+import { fs, vs } from "./shader";
+import { positions, indices, colors } from "./data";
 
 const init = async () => {
     const entry: GPU = navigator.gpu;

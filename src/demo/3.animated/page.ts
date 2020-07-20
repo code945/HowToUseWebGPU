@@ -1,50 +1,17 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-18 22:11:36
+ * @LastEditTime: 2020-07-20 16:48:52
  */
 
 import { mat4, vec3 } from "gl-matrix";
-import vs from "../../shaders/demo.vs";
-import fs from "../../shaders/demo.fs";
 import "../../style.less";
 import { WebGPURenderEngin } from "../../engine/renderEngin";
 import { WebGPURenderPipeline } from "../../engine/pipline";
+import { fs, vs } from "./shader";
+import { positions, indices, colors } from "./data";
 
 const renderEngine: WebGPURenderEngin = new WebGPURenderEngin("renderCanvas");
-const positions = new Float32Array([
-    0.5,
-    -0.5,
-    0.0,
-    -0.5,
-    -0.5,
-    0.0,
-    -0.5,
-    0.5,
-    0.0,
-    0.5,
-    0.5,
-    0.0,
-]);
-
-// 🎨 Color Vertex Buffer Data
-const colors = new Float32Array([
-    1.0,
-    0.0,
-    0.0, // red
-    0.0,
-    1.0,
-    0.0, // green
-    0.0,
-    0.0,
-    1.0, // blue
-    1.0,
-    1.0,
-    0.0, // yellow
-]);
-
-// 🗄️ Index Buffer Data
-const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
 
 const projectionMtrix = mat4.perspective(
     mat4.create(),
