@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-20 16:48:52
+ * @LastEditTime: 2020-07-20 22:21:40
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -12,6 +12,7 @@ import { fs, vs } from "./shader";
 import { positions, indices, colors } from "./data";
 
 const renderEngine: WebGPURenderEngin = new WebGPURenderEngin("renderCanvas");
+let pipline: WebGPURenderPipeline = null;
 
 const projectionMtrix = mat4.perspective(
     mat4.create(),
@@ -28,44 +29,46 @@ const viewMatrix = mat4.lookAt(
     vec3.fromValues(0, 1, 0)
 );
 
-const modelMatrix = mat4.fromTranslation(
-    mat4.create(),
-    vec3.fromValues(0, 0, 0)
-);
-const mvMatrix = mat4.mul(mat4.create(), modelMatrix, viewMatrix);
+const modelMatrix = mat4.create();
+const mvMatrix = mat4.create();
 
 const matrixArray = new Float32Array(32);
-matrixArray.set(projectionMtrix);
-matrixArray.set(mvMatrix, 16);
 
-let pipline: WebGPURenderPipeline = null;
+// 初始化方法
 const init = async () => {
+    // 初始化引擎 注意这里是个promise
     const engineReady = await renderEngine.init();
     if (engineReady) {
+        // 创建pipeline
         pipline = new WebGPURenderPipeline(renderEngine, vs, fs);
+        // 设置顶点
         pipline.addAttribute(positions);
+        // 设置颜色
         pipline.addAttribute(colors);
+        // 设置索引
         pipline.setIndex(indices);
+        // 设置mvp矩阵内容
         pipline.addUniformBuffer(matrixArray);
+        // 生成pipeline
         pipline.generatePipline();
+        // 开启主渲染循环
         render();
     }
 };
 
+// 渲染循环
 const render = () => {
-    let buffer = pipline.getUniformEntryByBinding(0).resource
-        .buffer as GPUBuffer;
+    // 获取mvp的矩阵内容
+    let buffer = pipline.getUniformEntryByBinding(0).resource.buffer as GPUBuffer;
+    // 更新物体的model旋转矩阵buffer
     pipline.updateBuffer(buffer, 0, getRotateMatrix());
+    // 调用绘制
     renderEngine.draw();
     requestAnimationFrame(render);
 };
 
 const getRotateMatrix = () => {
-    mat4.fromRotation(
-        modelMatrix,
-        0.005 * new Date().getTime(),
-        vec3.fromValues(0, 1, 0)
-    );
+    mat4.fromRotation(modelMatrix, 0.005 * new Date().getTime(), vec3.fromValues(0, 1, 0));
     mat4.mul(mvMatrix, viewMatrix, modelMatrix);
     matrixArray.set(projectionMtrix);
     matrixArray.set(mvMatrix, 16);

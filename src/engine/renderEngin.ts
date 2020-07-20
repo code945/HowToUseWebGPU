@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-08 15:48:10
- * @LastEditTime: 2020-07-20 09:37:22
+ * @LastEditTime: 2020-07-20 22:20:43
  */
 
 import { Glslang } from "@webgpu/glslang/dist/web-devel/glslang.onefile";
@@ -13,27 +13,15 @@ export class WebGPURenderEngin {
     canvas: HTMLCanvasElement;
     context: GPUCanvasContext;
 
-    // API Data Structures
     adapter: GPUAdapter;
     device: GPUDevice;
     queue: GPUQueue;
 
-    // Frame Backings
     swapChain: GPUSwapChain;
     swapChainTextureFormat: GPUTextureFormat;
-    colorTexture: GPUTexture;
-    colorTextureView: GPUTextureView;
     depthTexture: GPUTexture;
-    depthTextureView: GPUTextureView;
-
-    // Resources
 
     glslang: Glslang;
-    positionBuffer: GPUBuffer;
-    colorBuffer: GPUBuffer;
-    indexBuffer: GPUBuffer;
-    vertModule: GPUShaderModule;
-    fragModule: GPUShaderModule;
     pipelines: Array<WebGPURenderPipeline> = [];
 
     commandEncoder: GPUCommandEncoder;
@@ -45,9 +33,7 @@ export class WebGPURenderEngin {
         if (canvasOrDomId instanceof HTMLCanvasElement) {
             this.canvas = canvasOrDomId;
         } else {
-            this.canvas = document.getElementById(
-                canvasOrDomId
-            ) as HTMLCanvasElement;
+            this.canvas = document.getElementById(canvasOrDomId) as HTMLCanvasElement;
         }
     }
 
@@ -67,20 +53,14 @@ export class WebGPURenderEngin {
 
                 // 这句非常顺序非常重要，不能在获取device之前获取context，否则会canvas不显示图形
                 // 只有在dom更新（例如修改canvascss宽高）后才显示
-                this.context = (<unknown>(
-                    this.canvas.getContext("gpupresent")
-                )) as GPUCanvasContext;
+                this.context = (<unknown>this.canvas.getContext("gpupresent")) as GPUCanvasContext;
 
                 // 获取swapchain 用于向canvas输出渲染结果
-                this.swapChainTextureFormat = await this.context.getSwapChainPreferredFormat(
-                    this.device
-                );
+                this.swapChainTextureFormat = await this.context.getSwapChainPreferredFormat(this.device);
                 this.swapChain = this.context.configureSwapChain({
                     device: this.device,
                     format: this.swapChainTextureFormat,
-                    usage:
-                        GPUTextureUsage.OUTPUT_ATTACHMENT |
-                        GPUTextureUsage.COPY_SRC,
+                    usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
                 });
 
                 this.glslang = await glslangModule();
@@ -126,31 +106,14 @@ export class WebGPURenderEngin {
             },
         };
         // 🖌️ Encode drawing commands
-        this.renderPassEncoder = this.commandEncoder.beginRenderPass(
-            renderPassDesc
-        );
+        this.renderPassEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
         let currentPipeline = this.pipelines[0];
         this.renderPassEncoder.setPipeline(currentPipeline.pipeline);
 
-        this.renderPassEncoder.setBindGroup(
-            0,
-            currentPipeline.uniformBindGroup
-        );
+        this.renderPassEncoder.setBindGroup(0, currentPipeline.uniformBindGroup);
 
-        this.renderPassEncoder.setViewport(
-            0,
-            0,
-            this.canvas.width,
-            this.canvas.height,
-            0,
-            1
-        );
-        this.renderPassEncoder.setScissorRect(
-            0,
-            0,
-            this.canvas.width,
-            this.canvas.height
-        );
+        this.renderPassEncoder.setViewport(0, 0, this.canvas.width, this.canvas.height, 0, 1);
+        this.renderPassEncoder.setScissorRect(0, 0, this.canvas.width, this.canvas.height);
         for (let i = 0; i < currentPipeline.attributes.length; i++) {
             let buffer = currentPipeline.attributes[i].buffer;
             this.renderPassEncoder.setVertexBuffer(i, buffer);
@@ -159,13 +122,7 @@ export class WebGPURenderEngin {
         if (currentPipeline.indexLength > 0) {
             this.renderPassEncoder.setIndexBuffer(currentPipeline.indexBuffer);
 
-            this.renderPassEncoder.drawIndexed(
-                currentPipeline.indexLength,
-                1,
-                0,
-                0,
-                0
-            );
+            this.renderPassEncoder.drawIndexed(currentPipeline.indexLength, 1, 0, 0, 0);
         } else {
             this.renderPassEncoder.draw(vertNum, 1, 0, 0);
         }

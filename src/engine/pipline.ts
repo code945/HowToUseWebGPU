@@ -3,7 +3,7 @@ import { WebGPURenderEngin } from "./renderEngin";
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-15 15:40:27
- * @LastEditTime: 2020-07-18 23:05:30
+ * @LastEditTime: 2020-07-20 23:06:07
  */
 export class WebGPURenderPipeline {
     engin: WebGPURenderEngin;
@@ -44,8 +44,7 @@ export class WebGPURenderPipeline {
             // @ts-ignore
             source: vs,
             // @ts-ignore
-            transform: (source: any) =>
-                this.engin.glslang.compileGLSL(source, "vertex", true),
+            transform: (source: any) => this.engin.glslang.compileGLSL(source, "vertex", true),
         });
 
         this.fragModule = this.engin.device.createShaderModule({
@@ -54,15 +53,11 @@ export class WebGPURenderPipeline {
             // @ts-ignore
             source: fs,
             // @ts-ignore
-            transform: (source: any) =>
-                this.engin.glslang.compileGLSL(source, "fragment", true),
+            transform: (source: any) => this.engin.glslang.compileGLSL(source, "fragment", true),
         });
     }
 
-    createBuffer(
-        fromTypedArray: Float32Array | Uint16Array | Uint32Array,
-        usage: GPUBufferUsage
-    ) {
+    createBuffer(fromTypedArray: Float32Array | Uint16Array | Uint32Array, usage: GPUBufferUsage) {
         let desc = { size: fromTypedArray.byteLength, usage };
         let [buffer, bufferMapped] = this.engin.device.createBufferMapped(desc);
 
@@ -72,15 +67,8 @@ export class WebGPURenderPipeline {
         return buffer;
     }
 
-    updateBuffer(
-        to: GPUBuffer,
-        offset: number,
-        fromTypedArray: Float32Array | Uint16Array | Uint32Array
-    ) {
-        const [
-            uploadBuffer,
-            bufferMapped,
-        ] = this.engin.device.createBufferMapped({
+    updateBuffer(to: GPUBuffer, offset: number, fromTypedArray: Float32Array | Uint16Array | Uint32Array) {
+        const [uploadBuffer, bufferMapped] = this.engin.device.createBufferMapped({
             size: fromTypedArray.byteLength,
             usage: GPUBufferUsage.COPY_SRC,
         });
@@ -89,19 +77,11 @@ export class WebGPURenderPipeline {
         new fromTypedArray.constructor(bufferMapped).set(fromTypedArray);
         uploadBuffer.unmap();
         // @ts-ignore
-        this.engin.device.defaultQueue.writeBuffer(
-            to,
-            offset,
-            fromTypedArray,
-            0,
-            fromTypedArray.byteLength
-        );
+        this.engin.device.defaultQueue.writeBuffer(to, offset, fromTypedArray, 0, fromTypedArray.byteLength);
+        uploadBuffer.destroy();
     }
 
-    addAttribute(
-        typedArray: Float32Array | Uint16Array | Uint32Array,
-        componentSize: number = 3
-    ) {
+    addAttribute(typedArray: Float32Array | Uint16Array | Uint32Array, componentSize: number = 3) {
         const buffer = this.createBuffer(typedArray, GPUBufferUsage.VERTEX);
         this.attributes.push({ buffer, componentSize });
     }
@@ -129,14 +109,8 @@ export class WebGPURenderPipeline {
         return this.uniformEntries.get(key);
     }
 
-    addUniformBuffer(
-        typedArray: Float32Array | Uint16Array | Uint32Array,
-        binding: number = 0
-    ) {
-        const buffer = this.createBuffer(
-            typedArray,
-            GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        );
+    addUniformBuffer(typedArray: Float32Array | Uint16Array | Uint32Array, binding: number = 0) {
+        const buffer = this.createBuffer(typedArray, GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST);
         this.addUniformEntry({
             binding: 0,
             visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
@@ -147,11 +121,7 @@ export class WebGPURenderPipeline {
         });
     }
 
-    addSampler(
-        binding: number,
-        magFilter: GPUFilterMode = "linear",
-        minFilter: GPUFilterMode = "linear"
-    ) {
+    addSampler(binding: number, magFilter: GPUFilterMode = "linear", minFilter: GPUFilterMode = "linear") {
         const sampler = this.engin.device.createSampler({
             magFilter: magFilter,
             minFilter: minFilter,
@@ -166,11 +136,7 @@ export class WebGPURenderPipeline {
         });
     }
 
-    async addTextureView(
-        binding: number,
-        url: string,
-        needCors: boolean = true
-    ) {
+    async addTextureView(binding: number, url: string, needCors: boolean = true) {
         const img = new Image();
         if (needCors) {
             img.crossOrigin = "anonymous";
@@ -203,11 +169,7 @@ export class WebGPURenderPipeline {
             depth: 1,
         };
 
-        this.engin.device.defaultQueue.copyImageBitmapToTexture(
-            source,
-            destination,
-            copySize
-        );
+        this.engin.device.defaultQueue.copyImageBitmapToTexture(source, destination, copySize);
 
         bitmap.close();
 
@@ -219,62 +181,9 @@ export class WebGPURenderPipeline {
         });
     }
 
-    // addUniform(typedArray: Float32Array | Uint16Array | Uint32Array) {
-    //     const buffer = this.createBuffer(
-    //         typedArray,
-    //         GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    //     );
-
-    //     // @ts-ignore
-    //     const bindGroupLayoutDes: GPUBindGroupLayoutDescriptor = {
-    //         // @ts-ignore
-    //         entries: [
-    //             {
-    //                 binding: 0,
-    //                 visibility: GPUShaderStage.VERTEX,
-    //                 type: "uniform-buffer",
-    //             },
-    //             // {
-    //             //     binding: 1,
-    //             //     visibility: GPUShaderStage.FRAGMENT,
-    //             //     type: "sampler",
-    //             // },
-    //             // {
-    //             //     binding: 2,
-    //             //     visibility: GPUShaderStage.FRAGMENT,
-    //             //     type: "sampled-texture",
-    //             // },
-    //         ],
-    //     };
-    //     const uniformBindGroupLayout = this.engin.device.createBindGroupLayout(
-    //         bindGroupLayoutDes
-    //     );
-    //     // 🗄️ Bind Group
-    //     // ✍ This would be used when encoding commands
-    //     uniformBindGroup = this.engin.device.createBindGroup({
-    //         layout: uniformBindGroupLayout,
-    //         // @ts-ignore
-    //         entries: [
-    //             {
-    //                 binding: 0,
-    //                 resource: {
-    //                     buffer: buffer,
-    //                 },
-    //             },
-    //         ],
-    //     });
-
-    //     this.uniformGroupInfo = {
-    //         buffer,
-    //         uniformBindGroupLayout,
-    //         uniformBindGroup,
-    //     };
-    // }
-
     generateUniforms() {
         const bindGroupLayoutDes: any = { entries: [] };
         const bindGroupEntries: Array<any> = [];
-        const entries = this.uniformEntries.values;
         this.uniformEntries.forEach((entry, key) => {
             bindGroupLayoutDes.entries.push({
                 binding: entry.binding,
@@ -287,9 +196,7 @@ export class WebGPURenderPipeline {
             });
         });
 
-        this.uniformBindGroupLayout = this.engin.device.createBindGroupLayout(
-            bindGroupLayoutDes
-        );
+        this.uniformBindGroupLayout = this.engin.device.createBindGroupLayout(bindGroupLayoutDes);
         this.uniformBindGroup = this.engin.device.createBindGroup({
             layout: this.uniformBindGroupLayout,
             // @ts-ignore
@@ -356,9 +263,7 @@ export class WebGPURenderPipeline {
             },
             rasterizationState: this.rasterizationState,
         };
-        this.pipeline = this.engin.device.createRenderPipeline(
-            this.pipelineDesc
-        );
+        this.pipeline = this.engin.device.createRenderPipeline(this.pipelineDesc);
     }
 
     getVertexBufferDesc() {
