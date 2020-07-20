@@ -1,13 +1,58 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-15 22:54:06
+ * @LastEditTime: 2020-07-20 15:11:29
  */
 
-import vs from "../../shaders/demo.basic.vs";
-import fs from "../../shaders/demo.basic.fs";
 import glslangModule from "@webgpu/glslang/dist/web-devel/glslang.onefile";
 import "../../style.less";
+
+const vs = `#version 450 
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec4 aColor;
+
+layout(location = 0) out vec4 vColor;
+void main() {
+    gl_Position = vec4(aPosition, 1.0);
+    vColor = aColor;
+}`;
+
+const fs = `#version 450
+layout(location = 0) in vec4 vColor;
+layout(location = 0) out vec4 outColor;
+void main(void) {
+  outColor = vColor;
+}`;
+
+// Position Vertex Buffer Data
+const positions = new Float32Array([
+    1.0,
+    -1.0,
+    0.0,
+    -1.0,
+    -1.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+]);
+
+// Color Vertex Buffer Data
+const colors = new Float32Array([
+    1.0,
+    0.0,
+    0.0, // 🔴
+    0.0,
+    1.0,
+    0.0, // 🟢
+    0.0,
+    0.0,
+    1.0, // 🔵
+]);
+
+// Index Buffer Data
+const indices = new Uint16Array([0, 2, 1]);
+
 const init = async () => {
     const entry: GPU = navigator.gpu;
     if (!entry) {
@@ -42,6 +87,19 @@ const init = async () => {
 
     const glslang = await glslangModule();
 
+    let createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
+        let desc = { size: arr.byteLength, usage };
+        let [buffer, bufferMapped] = device.createBufferMapped(desc);
+
+        const writeArray =
+            arr instanceof Uint16Array
+                ? new Uint16Array(bufferMapped)
+                : new Float32Array(bufferMapped);
+        writeArray.set(arr);
+        buffer.unmap();
+        return buffer;
+    };
+
     // 创建command生成器 用来编码向gpu发送的command
     const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
 
@@ -61,72 +119,9 @@ const init = async () => {
         renderPassDescriptor
     );
 
-    // 📈 Position Vertex Buffer Data
-    const positions = new Float32Array([
-        1.0,
-        -1.0,
-        0.0,
-        -1.0,
-        -1.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-    ]);
-
-    // 🎨 Color Vertex Buffer Data
-    const colors = new Float32Array([
-        1.0,
-        0.0,
-        0.0, // 🔴
-        0.0,
-        1.0,
-        0.0, // 🟢
-        0.0,
-        0.0,
-        1.0, // 🔵
-    ]);
-
-    // 🗄️ Index Buffer Data
-    const indices = new Uint16Array([0, 1, 2]);
-
-    let createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
-        let desc = { size: arr.byteLength, usage };
-        let [buffer, bufferMapped] = device.createBufferMapped(desc);
-
-        const writeArray =
-            arr instanceof Uint16Array
-                ? new Uint16Array(bufferMapped)
-                : new Float32Array(bufferMapped);
-        writeArray.set(arr);
-        buffer.unmap();
-        return buffer;
-    };
-
     const positionBuffer = createBuffer(positions, GPUBufferUsage.VERTEX);
     const colorBuffer = createBuffer(colors, GPUBufferUsage.VERTEX);
     const indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX);
-
-    // 🖍️ Shaders
-
-    const vertModule = device.createShaderModule({
-        code: glslang.compileGLSL(vs, "vertex", true),
-
-        // @ts-ignore
-        source: vs,
-        // @ts-ignore
-        transform: (source: any) => glslang.compileGLSL(source, "vertex", true),
-    });
-
-    const fragModule = device.createShaderModule({
-        code: glslang.compileGLSL(fs, "fragment", true),
-
-        // @ts-ignore
-        source: fs,
-        // @ts-ignore
-        transform: (source: any) =>
-            glslang.compileGLSL(source, "fragment", true),
-    });
 
     /// ⚗️ Graphics Pipeline
 
@@ -159,12 +154,16 @@ const init = async () => {
 
     // 🖍️ Shader Modules
     const vertexStage = {
-        module: vertModule,
+        module: device.createShaderModule({
+            code: glslang.compileGLSL(vs, "vertex", true),
+        }),
         entryPoint: "main",
     };
 
     const fragmentStage = {
-        module: fragModule,
+        module: device.createShaderModule({
+            code: glslang.compileGLSL(fs, "fragment", true),
+        }),
         entryPoint: "main",
     };
 
@@ -186,8 +185,8 @@ const init = async () => {
 
     // 🔺 Rasterization
     const rasterizationState: GPURasterizationStateDescriptor = {
-        frontFace: "cw",
-        cullMode: "none",
+        frontFace: "ccw",
+        cullMode: "back",
     };
 
     // 💾 Uniform Data
