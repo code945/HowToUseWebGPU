@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-20 22:21:40
+ * @LastEditTime: 2020-07-21 10:01:34
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -28,6 +28,8 @@ const viewMatrix = mat4.lookAt(
     vec3.fromValues(0, 0, 1),
     vec3.fromValues(0, 1, 0)
 );
+
+mat4.invert(viewMatrix, viewMatrix);
 
 const modelMatrix = mat4.create();
 const mvMatrix = mat4.create();

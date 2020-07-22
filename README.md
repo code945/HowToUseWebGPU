@@ -1,7 +1,7 @@
 <!--
  * @Author: hongxu.lin
  * @Date: 2020-07-01 14:52:34
- * @LastEditTime: 2020-07-20 17:06:02
+ * @LastEditTime: 2020-07-22 14:25:08
 -->
 
 **文章适合已经有 webgl（或其他图形学基础）的同学阅读学习，不适合纯新手，建议新手同学从 threejs 入门，学习曲线稍微平滑点。**
@@ -70,7 +70,7 @@ webgpu 是下一代的 web 端图形接口，虽然目前仍然没法发布正�
 1. [clearcolor 最简单的应用从清屏开始](docs/1.清屏.md)
 2. [drawTriangle 画个三角形 （attributes index）](docs/2.绘制三角形.md)
 3. [animated 动起来 （uniform）](docs/3.动起来（uniform）.md)
-4. textured 加上贴图
+4. [textured 加上贴图](docs/4.材质贴图.md)
 5. directionalLight 方向光
 6. pointLight 点光源
 7. spotLight 聚光灯

@@ -3,7 +3,7 @@ import { WebGPURenderEngin } from "./renderEngin";
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-15 15:40:27
- * @LastEditTime: 2020-07-20 23:06:07
+ * @LastEditTime: 2020-07-22 13:53:47
  */
 export class WebGPURenderPipeline {
     engin: WebGPURenderEngin;
@@ -137,14 +137,16 @@ export class WebGPURenderPipeline {
     }
 
     async addTextureView(binding: number, url: string, needCors: boolean = true) {
+        // 加载图片
         const img = new Image();
         if (needCors) {
             img.crossOrigin = "anonymous";
         }
         img.src = url;
         await img.decode();
+        // 生成bitmap
         const bitmap = await createImageBitmap(img);
-
+        // 创建GPUTexture
         const texture = this.engin.device.createTexture({
             size: {
                 width: img.width,
@@ -155,22 +157,19 @@ export class WebGPURenderPipeline {
             usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
         });
 
-        let source: GPUImageBitmapCopyView = {
-            imageBitmap: bitmap,
-        };
-
-        let destination: GPUTextureCopyView = {
-            texture: texture,
-        };
-
+        // 设置copy的源
+        let source: GPUImageBitmapCopyView = { imageBitmap: bitmap };
+        // 设置copy到的地方
+        let destination: GPUTextureCopyView = { texture: texture };
+        // 设置copy的尺寸
         let copySize: GPUExtent3D = {
             width: img.width,
             height: img.height,
             depth: 1,
         };
-
+        // 执行copy操作
         this.engin.device.defaultQueue.copyImageBitmapToTexture(source, destination, copySize);
-
+        // 释放bitmap数据
         bitmap.close();
 
         this.addUniformEntry({
@@ -236,7 +235,7 @@ export class WebGPURenderPipeline {
         // 🔺 Rasterization
         this.rasterizationState = {
             // frontFace: "cw",
-            // cullMode: "back",
+            cullMode: "back",
         };
 
         // 💾 Uniform Data
