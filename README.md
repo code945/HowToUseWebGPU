@@ -1,7 +1,7 @@
 <!--
  * @Author: hongxu.lin
  * @Date: 2020-07-01 14:52:34
- * @LastEditTime: 2020-07-22 14:25:08
+ * @LastEditTime: 2020-07-22 14:38:44
 -->
 
 **文章适合已经有 webgl（或其他图形学基础）的同学阅读学习，不适合纯新手，建议新手同学从 threejs 入门，学习曲线稍微平滑点。**
@@ -74,6 +74,7 @@ webgpu 是下一代的 web 端图形接口，虽然目前仍然没法发布正�
 5. directionalLight 方向光
 6. pointLight 点光源
 7. spotLight 聚光灯
+8. 阴影
 
 文章使用 markdown 撰写，在 `/docs` 目录中
 

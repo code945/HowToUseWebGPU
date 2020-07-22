@@ -3,7 +3,7 @@ import { WebGPURenderEngin } from "./renderEngin";
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-15 15:40:27
- * @LastEditTime: 2020-07-22 13:53:47
+ * @LastEditTime: 2020-07-22 14:41:59
  */
 export class WebGPURenderPipeline {
     engin: WebGPURenderEngin;
@@ -68,17 +68,8 @@ export class WebGPURenderPipeline {
     }
 
     updateBuffer(to: GPUBuffer, offset: number, fromTypedArray: Float32Array | Uint16Array | Uint32Array) {
-        const [uploadBuffer, bufferMapped] = this.engin.device.createBufferMapped({
-            size: fromTypedArray.byteLength,
-            usage: GPUBufferUsage.COPY_SRC,
-        });
-
-        // @ts-ignore
-        new fromTypedArray.constructor(bufferMapped).set(fromTypedArray);
-        uploadBuffer.unmap();
         // @ts-ignore
         this.engin.device.defaultQueue.writeBuffer(to, offset, fromTypedArray, 0, fromTypedArray.byteLength);
-        uploadBuffer.destroy();
     }
 
     addAttribute(typedArray: Float32Array | Uint16Array | Uint32Array, componentSize: number = 3) {
