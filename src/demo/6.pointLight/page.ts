@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-20 16:59:38
+ * @LastEditTime: 2020-07-23 14:49:28
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -9,6 +9,7 @@ import { WebGPURenderEngin } from "../../engine/renderEngin";
 import { WebGPURenderPipeline } from "../../engine/pipline";
 
 import "../../style.less";
+
 import { fs, vs } from "./shader";
 import { positions, normals, longSize } from "./data";
 
@@ -29,15 +30,12 @@ const viewMatrix = mat4.lookAt(
     vec3.fromValues(0, 1, 0)
 );
 
-const modelMatrix = mat4.fromTranslation(
-    mat4.create(),
-    vec3.fromValues(0, 0, 0)
-);
-const mvMatrix = mat4.mul(mat4.create(), modelMatrix, viewMatrix);
+const modelMatrix = mat4.create();
+const mvMatrix = mat4.create();
+const mvpMatrix = mat4.create();
+const mvInvertTranspose = mat4.create();
 
-const matrixArray = new Float32Array(32);
-matrixArray.set(projectionMtrix);
-matrixArray.set(mvMatrix, 16);
+const matrixArray = new Float32Array(48);
 
 let pipline: WebGPURenderPipeline = null;
 const init = async () => {
@@ -53,22 +51,27 @@ const init = async () => {
 };
 
 const render = () => {
-    let buffer = pipline.getUniformEntryByBinding(0).resource
-        .buffer as GPUBuffer;
+    let buffer = pipline.getUniformEntryByBinding(0).resource.buffer as GPUBuffer;
     pipline.updateBuffer(buffer, 0, getRotateMatrix());
     renderEngine.draw(positions.length / 3);
     requestAnimationFrame(render);
 };
 
 const getRotateMatrix = () => {
-    mat4.fromRotation(
-        modelMatrix,
-        0.0005 * new Date().getTime(),
-        vec3.fromValues(0, 1, 0)
-    );
+    mat4.fromRotation(modelMatrix, 0.0005 * new Date().getTime(), vec3.fromValues(0, 1, 0));
+    // model view matrix
     mat4.mul(mvMatrix, viewMatrix, modelMatrix);
-    matrixArray.set(projectionMtrix);
+    // mvp matrix
+    mat4.mul(mvpMatrix, projectionMtrix, mvMatrix);
+    // invert mv matrix
+    mat4.invert(mvInvertTranspose, mvMatrix);
+    // invert transpose mv matrix
+    mat4.transpose(mvInvertTranspose, mvInvertTranspose);
+
+    matrixArray.set(mvpMatrix);
     matrixArray.set(mvMatrix, 16);
+    matrixArray.set(mvInvertTranspose, 32);
+
     return matrixArray;
 };
 

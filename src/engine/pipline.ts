@@ -1,9 +1,10 @@
 import { WebGPURenderEngin } from "./renderEngin";
+import { getImageData } from "./utils";
 
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-15 15:40:27
- * @LastEditTime: 2020-07-22 14:41:59
+ * @LastEditTime: 2020-07-23 15:59:23
  */
 export class WebGPURenderPipeline {
     engin: WebGPURenderEngin;
@@ -135,8 +136,7 @@ export class WebGPURenderPipeline {
         }
         img.src = url;
         await img.decode();
-        // 生成bitmap
-        const bitmap = await createImageBitmap(img);
+
         // 创建GPUTexture
         const texture = this.engin.device.createTexture({
             size: {
@@ -148,20 +148,59 @@ export class WebGPURenderPipeline {
             usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
         });
 
-        // 设置copy的源
-        let source: GPUImageBitmapCopyView = { imageBitmap: bitmap };
-        // 设置copy到的地方
-        let destination: GPUTextureCopyView = { texture: texture };
-        // 设置copy的尺寸
-        let copySize: GPUExtent3D = {
-            width: img.width,
-            height: img.height,
-            depth: 1,
-        };
-        // 执行copy操作
-        this.engin.device.defaultQueue.copyImageBitmapToTexture(source, destination, copySize);
-        // 释放bitmap数据
-        bitmap.close();
+        const textureData = getImageData(img);
+
+        //@ts-ignore
+        if (typeof this.engin.device.defaultQueue.writeTexture === "function") {
+            //@ts-ignore
+            this.engin.device.defaultQueue.writeTexture({ texture }, textureData, { bytesPerRow: img.width * 4 }, [
+                img.width,
+                img.height,
+                1,
+            ]);
+        } else if (createImageBitmap !== undefined) {
+            // 生成bitmap
+            const bitmap = await createImageBitmap(img);
+
+            // 设置copy的源
+            let source: GPUImageBitmapCopyView = { imageBitmap: bitmap };
+            // 设置copy到的地方
+            let destination: GPUTextureCopyView = { texture: texture };
+            // 设置copy的尺寸
+            let copySize: GPUExtent3D = {
+                width: img.width,
+                height: img.height,
+                depth: 1,
+            };
+            // 执行copy操作
+            this.engin.device.defaultQueue.copyImageBitmapToTexture(source, destination, copySize);
+            // 释放bitmap数据
+            bitmap.close();
+        } else {
+            // NOTE: Fallback until Queue.writeTexture is implemented.
+            const textureDataBuffer = this.engin.device.createBuffer({
+                size: textureData.byteLength,
+                usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+            });
+            //@ts-ignore
+            this.engin.device.defaultQueue.writeBuffer(textureDataBuffer, 0, textureData);
+
+            const textureLoadEncoder = this.engin.device.createCommandEncoder();
+            textureLoadEncoder.copyBufferToTexture(
+                {
+                    buffer: textureDataBuffer,
+                    //@ts-ignore
+                    bytesPerRow: img.width * 4,
+                    imageHeight: img.height,
+                },
+                {
+                    texture,
+                },
+                [img.width, img.height, 1]
+            );
+
+            this.engin.device.defaultQueue.submit([textureLoadEncoder.finish()]);
+        }
 
         this.addUniformEntry({
             binding: binding,
@@ -226,7 +265,7 @@ export class WebGPURenderPipeline {
         // 🔺 Rasterization
         this.rasterizationState = {
             // frontFace: "cw",
-            cullMode: "back",
+            // cullMode: "back",
         };
 
         // 💾 Uniform Data

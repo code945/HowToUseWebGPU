@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-21 11:54:58
+ * @LastEditTime: 2020-07-23 17:00:08
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -30,12 +30,12 @@ const viewMatrix = mat4.lookAt(
     vec3.fromValues(0, 1, 0)
 );
 
-const modelMatrix = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
-const mvMatrix = mat4.mul(mat4.create(), modelMatrix, viewMatrix);
+const modelMatrix = mat4.create();
+const mvMatrix = mat4.create();
+const mvpMatrix = mat4.create();
+const mvInvertTranspose = mat4.create();
 
-const matrixArray = new Float32Array(32);
-matrixArray.set(projectionMtrix);
-matrixArray.set(mvMatrix, 16);
+const matrixArray = new Float32Array(48);
 
 let pipline: WebGPURenderPipeline = null;
 const init = async () => {
@@ -59,9 +59,19 @@ const render = () => {
 
 const getRotateMatrix = () => {
     mat4.fromRotation(modelMatrix, 0.0005 * new Date().getTime(), vec3.fromValues(0, 1, 0));
+    // model view matrix
     mat4.mul(mvMatrix, viewMatrix, modelMatrix);
-    matrixArray.set(projectionMtrix);
-    matrixArray.set(mvMatrix, 16);
+    // mvp matrix
+    mat4.mul(mvpMatrix, projectionMtrix, mvMatrix);
+    // invert mv matrix
+    mat4.invert(mvInvertTranspose, modelMatrix);
+    // invert transpose mv matrix
+    mat4.transpose(mvInvertTranspose, mvInvertTranspose);
+
+    matrixArray.set(mvpMatrix);
+    matrixArray.set(modelMatrix, 16);
+    matrixArray.set(mvInvertTranspose, 32);
+
     return matrixArray;
 };
 
