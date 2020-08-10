@@ -21,4 +21,4 @@ export const colors = new Float32Array([
 ]);
 
 // Index Buffer Data
-export const indices = new Uint16Array([0, 2, 1]);
+export const indices = new Uint32Array([0, 2, 1]);

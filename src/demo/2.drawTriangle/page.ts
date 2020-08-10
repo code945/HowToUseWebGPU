@@ -30,9 +30,7 @@ const init = async () => {
     canvas.height = window.innerHeight;
     // 这句非常顺序非常重要，不能在获取device之前获取context，否则会canvas不显示图形
     // 只有在dom更新（例如修改canvascss宽高）后才显示
-    const context = (<unknown>(
-        canvas.getContext("gpupresent")
-    )) as GPUCanvasContext;
+    const context = (<unknown>canvas.getContext("gpupresent")) as GPUCanvasContext;
 
     // 获取swapchain 用于向canvas输出渲染结果
     const format = await context.getSwapChainPreferredFormat(device);
@@ -44,14 +42,11 @@ const init = async () => {
 
     const glslang = await glslangModule();
 
-    let createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
+    let createBuffer = (arr: Float32Array | Uint16Array | Uint32Array, usage: number) => {
         let desc = { size: arr.byteLength, usage };
         let [buffer, bufferMapped] = device.createBufferMapped(desc);
 
-        const writeArray =
-            arr instanceof Uint16Array
-                ? new Uint16Array(bufferMapped)
-                : new Float32Array(bufferMapped);
+        const writeArray = arr instanceof Uint32Array ? new Uint32Array(bufferMapped) : new Float32Array(bufferMapped);
         writeArray.set(arr);
         buffer.unmap();
         return buffer;
@@ -72,9 +67,7 @@ const init = async () => {
     };
 
     // 开始渲染pass
-    const renderPassEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(
-        renderPassDescriptor
-    );
+    const renderPassEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
     const positionBuffer = createBuffer(positions, GPUBufferUsage.VERTEX);
     const colorBuffer = createBuffer(colors, GPUBufferUsage.VERTEX);
@@ -105,7 +98,7 @@ const init = async () => {
     };
 
     const vertexState: GPUVertexStateDescriptor = {
-        indexFormat: "uint16",
+        indexFormat: "uint32",
         vertexBuffers: [positionBufferDesc, colorBufferDesc],
     };
 
@@ -163,20 +156,8 @@ const init = async () => {
     const pipeline = device.createRenderPipeline(pipelineDesc);
 
     renderPassEncoder.setPipeline(pipeline);
-    renderPassEncoder.setViewport(
-        0,
-        0,
-        canvas.clientWidth,
-        canvas.clientHeight,
-        0,
-        1
-    );
-    renderPassEncoder.setScissorRect(
-        0,
-        0,
-        canvas.clientWidth,
-        canvas.clientHeight
-    );
+    renderPassEncoder.setViewport(0, 0, canvas.clientWidth, canvas.clientHeight, 0, 1);
+    renderPassEncoder.setScissorRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     renderPassEncoder.setVertexBuffer(0, positionBuffer);
     renderPassEncoder.setVertexBuffer(1, colorBuffer);
     renderPassEncoder.setIndexBuffer(indexBuffer);
