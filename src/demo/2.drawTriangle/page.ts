@@ -43,13 +43,16 @@ const init = async () => {
     const glslang = await glslangModule();
 
     let createBuffer = (arr: Float32Array | Uint16Array | Uint32Array, usage: number) => {
-        let desc = { size: arr.byteLength, usage };
-        let [buffer, bufferMapped] = device.createBufferMapped(desc);
-
-        const writeArray = arr instanceof Uint32Array ? new Uint32Array(bufferMapped) : new Float32Array(bufferMapped);
-        writeArray.set(arr);
-        buffer.unmap();
-        return buffer;
+        const gpubuffer = device.createBuffer({
+            size: arr.byteLength,
+            usage,
+            //@ts-ignore
+            mappedAtCreation: true,
+        });
+        //@ts-ignore
+        new arr.constructor(gpubuffer.getMappedRange()).set(arr);
+        gpubuffer.unmap();
+        return gpubuffer;
     };
 
     // 创建command生成器 用来编码向gpu发送的command

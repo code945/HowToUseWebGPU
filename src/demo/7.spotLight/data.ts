@@ -14,6 +14,6 @@ const positions = new Float32Array([
 // prettier-ignore
 const normals = new Float32Array([0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
 // prettier-ignore
-const indices = new Uint16Array([0, 2, 1, 0, 3, 2]);
+const indices = new Uint32Array([0, 2, 1, 0, 3, 2]);
 
 export { positions, normals, indices };

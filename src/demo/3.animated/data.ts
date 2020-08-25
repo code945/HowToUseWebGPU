@@ -22,6 +22,6 @@ const colors = new Float32Array([
 ]);
 
 // 🗄️ Index Buffer Data
-const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
+const indices = new Uint32Array([0, 2, 1, 0, 3, 2]);
 
 export { positions, colors, indices };

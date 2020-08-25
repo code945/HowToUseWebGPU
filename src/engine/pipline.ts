@@ -59,13 +59,16 @@ export class WebGPURenderPipeline {
     }
 
     createBuffer(fromTypedArray: Float32Array | Uint16Array | Uint32Array, usage: GPUBufferUsage) {
-        let desc = { size: fromTypedArray.byteLength, usage };
-        let [buffer, bufferMapped] = this.engin.device.createBufferMapped(desc);
-
-        // @ts-ignore
-        new fromTypedArray.constructor(bufferMapped).set(fromTypedArray);
-        buffer.unmap();
-        return buffer;
+        const gpuBuffer = this.engin.device.createBuffer({
+            size: fromTypedArray.byteLength,
+            usage,
+            //@ts-ignore
+            mappedAtCreation: true,
+        });
+        //@ts-ignore
+        new fromTypedArray.constructor(gpuBuffer.getMappedRange()).set(fromTypedArray);
+        gpuBuffer.unmap();
+        return gpuBuffer;
     }
 
     updateBuffer(to: GPUBuffer, offset: number, fromTypedArray: Float32Array | Uint16Array | Uint32Array) {
@@ -76,6 +79,13 @@ export class WebGPURenderPipeline {
     addAttribute(typedArray: Float32Array | Uint16Array | Uint32Array, componentSize: number = 3) {
         const buffer = this.createBuffer(typedArray, GPUBufferUsage.VERTEX);
         this.attributes.push({ buffer, componentSize });
+    }
+
+    resetAttributes() {
+        this.attributes.forEach((item) => {
+            item.buffer.destroy();
+        });
+        this.attributes = [];
     }
 
     setIndex(typedArray: Uint16Array | Uint32Array) {
@@ -264,8 +274,8 @@ export class WebGPURenderPipeline {
 
         // 🔺 Rasterization
         this.rasterizationState = {
-            // frontFace: "cw",
-            // cullMode: "back",
+            // frontFace: "ccw",
+            // cullMode: "none",
         };
 
         // 💾 Uniform Data
@@ -274,7 +284,7 @@ export class WebGPURenderPipeline {
         });
 
         this.vertexState = {
-            indexFormat: "uint16",
+            indexFormat: "uint32",
             vertexBuffers: this.getVertexBufferDesc(),
         };
 

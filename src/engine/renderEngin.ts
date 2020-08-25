@@ -107,24 +107,26 @@ export class WebGPURenderEngin {
         };
         // 🖌️ Encode drawing commands
         this.renderPassEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
-        let currentPipeline = this.pipelines[0];
-        this.renderPassEncoder.setPipeline(currentPipeline.pipeline);
+        for (let i = 0; i < this.pipelines.length; i++) {
+            let currentPipeline = this.pipelines[i];
+            this.renderPassEncoder.setPipeline(currentPipeline.pipeline);
 
-        this.renderPassEncoder.setBindGroup(0, currentPipeline.uniformBindGroup);
+            this.renderPassEncoder.setBindGroup(0, currentPipeline.uniformBindGroup);
 
-        this.renderPassEncoder.setViewport(0, 0, this.canvas.width, this.canvas.height, 0, 1);
-        this.renderPassEncoder.setScissorRect(0, 0, this.canvas.width, this.canvas.height);
-        for (let i = 0; i < currentPipeline.attributes.length; i++) {
-            let buffer = currentPipeline.attributes[i].buffer;
-            this.renderPassEncoder.setVertexBuffer(i, buffer);
-        }
+            this.renderPassEncoder.setViewport(0, 0, this.canvas.width, this.canvas.height, 0, 1);
+            this.renderPassEncoder.setScissorRect(0, 0, this.canvas.width, this.canvas.height);
+            for (let i = 0; i < currentPipeline.attributes.length; i++) {
+                let buffer = currentPipeline.attributes[i].buffer;
+                this.renderPassEncoder.setVertexBuffer(i, buffer);
+            }
 
-        if (currentPipeline.indexLength > 0) {
-            this.renderPassEncoder.setIndexBuffer(currentPipeline.indexBuffer);
+            if (currentPipeline.indexLength > 0) {
+                this.renderPassEncoder.setIndexBuffer(currentPipeline.indexBuffer);
 
-            this.renderPassEncoder.drawIndexed(currentPipeline.indexLength, 1, 0, 0, 0);
-        } else {
-            this.renderPassEncoder.draw(vertNum, 1, 0, 0);
+                this.renderPassEncoder.drawIndexed(currentPipeline.indexLength, 1, 0, 0, 0);
+            } else {
+                this.renderPassEncoder.draw(vertNum, 1, 0, 0);
+            }
         }
 
         this.renderPassEncoder.endPass();

@@ -1,14 +1,14 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-20 16:44:11
- * @LastEditTime: 2020-07-23 17:04:10
+ * @LastEditTime: 2020-07-24 09:48:59
  */
 
 const vs = `#version 450
 layout(set = 0, binding = 0) uniform Uniforms {
     mat4 uMVPMatrix;
     mat4 uMVMatrix;
-    mat4 uModelInverseTranspose;
+    mat4 uNormalMatrix;
 };
 
 layout(location = 0) in vec3 aPosition;
@@ -17,7 +17,7 @@ layout(location = 1) in vec3 aNormal;
 layout(location = 0) out vec3 vNormal;
 void main() {
     gl_Position = uMVPMatrix * vec4(aPosition, 1.0);
-    vNormal = (uModelInverseTranspose * vec4(aNormal, 0)).xyz;
+    vNormal = (uNormalMatrix * vec4(aNormal, 0)).xyz;
 }`;
 
 const fs = `#version 450

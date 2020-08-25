@@ -14,7 +14,7 @@ const positions = new Float32Array([
 
 // Index Buffer Data
 // prettier-ignore
-const indices = new Uint16Array([
+const indices = new Uint32Array([
     0, 2, 1, 
     0, 3, 2
 ]);

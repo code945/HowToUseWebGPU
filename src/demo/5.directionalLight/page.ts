@@ -1,7 +1,7 @@
 /*
  * @Author: hongxu.lin
  * @Date: 2020-07-02 14:40:15
- * @LastEditTime: 2020-07-23 17:00:08
+ * @LastEditTime: 2020-07-24 09:48:14
  */
 
 import { mat4, vec3 } from "gl-matrix";
@@ -35,7 +35,7 @@ const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 const mvInvertTranspose = mat4.create();
 
-const matrixArray = new Float32Array(48);
+const matrixArray = new Float32Array(64);
 
 let pipline: WebGPURenderPipeline = null;
 const init = async () => {
@@ -64,13 +64,15 @@ const getRotateMatrix = () => {
     // mvp matrix
     mat4.mul(mvpMatrix, projectionMtrix, mvMatrix);
     // invert mv matrix
-    mat4.invert(mvInvertTranspose, modelMatrix);
+    mat4.invert(mvInvertTranspose, mvMatrix);
     // invert transpose mv matrix
     mat4.transpose(mvInvertTranspose, mvInvertTranspose);
 
     matrixArray.set(mvpMatrix);
-    matrixArray.set(modelMatrix, 16);
+    matrixArray.set(mvMatrix, 16);
+    //for normal
     matrixArray.set(mvInvertTranspose, 32);
+    matrixArray.set(viewMatrix, 48);
 
     return matrixArray;
 };
